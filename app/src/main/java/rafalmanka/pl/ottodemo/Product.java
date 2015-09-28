@@ -10,6 +10,8 @@ import java.io.Serializable;
  */
 public class Product implements Serializable {
 
+    private static int nextId;
+
     @Nullable
     private String name;
     @Nullable
@@ -20,6 +22,11 @@ public class Product implements Serializable {
     private User user;
     @Nullable
     private String imageUrl;
+    private int id;
+
+    public Product() {
+        id = nextId++;
+    }
 
     public String getName() {
         return name;
@@ -79,6 +86,19 @@ public class Product implements Serializable {
 
     public float getDisplayPrice() {
         return price / 100;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setPrice(String s) throws ProductException {
+        try {
+            float displayprice = Float.valueOf(s);
+            price = (int) (displayprice * 100);
+        } catch (NumberFormatException e) {
+            throw new ProductException("price in wrong format");
+        }
     }
 
     public class ProductException extends Exception {

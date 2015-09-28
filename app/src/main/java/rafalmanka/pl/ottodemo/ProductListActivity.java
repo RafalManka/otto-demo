@@ -1,22 +1,21 @@
 package rafalmanka.pl.ottodemo;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -25,19 +24,57 @@ import java.util.ArrayList;
 public class ProductListActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private static final String TAG = ProductListActivity.class.getSimpleName();
+    private static final String KEY_PRODUCTS = "KEY_PRODUCTS";
     @Nullable
     private ListView mListView;
+    @Nullable
+    private ProductListActivityAdapter mAdapter;
+    @Nullable
+    private ArrayList<Product> mProducts;
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable(KEY_PRODUCTS, mProducts);
+        super.onSaveInstanceState(outState);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_list);
+
+        if (savedInstanceState == null) {
+            mProducts = MockProducts.createMockProducts();
+        } else {
+            //noinspection unchecked
+            mProducts = (ArrayList<Product>) savedInstanceState.getSerializable(KEY_PRODUCTS);
+        }
+
         mListView = (ListView) findViewById(R.id.listView);
         if (mListView != null) {
-            mListView.setAdapter(new ProductListActivityAdapter());
+            mListView.setAdapter(getAdapter());
             mListView.setOnItemClickListener(this);
         }
+
+        BusProvider.getInstance().register(this);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BusProvider.getInstance().unregister(this);
+    }
+
+    @Subscribe
+    public void onEventProductChanged(EditProductActivity.EventProductChanged event) {
+        try {
+            getAdapter().updateProduct(event.getProduct());
+            getAdapter().notifyDataSetChanged();
+        } catch (ProductListActivityException e) {
+            Log.e(TAG, "could not update products", e);
+        }
+    }
+
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -49,22 +86,41 @@ public class ProductListActivity extends AppCompatActivity implements AdapterVie
 
     }
 
+    @NonNull
+    public ProductListActivityAdapter getAdapter() {
+        if (mAdapter == null) {
+            mAdapter = new ProductListActivityAdapter();
+        }
+        return mAdapter;
+    }
+
+    public ArrayList<Product> getProducts() throws ProductListActivityException {
+        if (mProducts == null) {
+            throw new ProductListActivityException("products are not set");
+        }
+        return mProducts;
+    }
+
     private class ProductListActivityAdapter extends BaseAdapter {
 
-        private final ArrayList<Product> _products;
-
-        ProductListActivityAdapter() {
-            _products = MockProducts.createMockProducts();
-        }
 
         @Override
         public int getCount() {
-            return _products.size();
+            try {
+                return getProducts().size();
+            } catch (ProductListActivityException e) {
+                return 0;
+            }
         }
 
         @Override
+        @Nullable
         public Product getItem(int position) {
-            return _products.get(position);
+            try {
+                return getProducts().get(position);
+            } catch (ProductListActivityException e) {
+                return null;
+            }
         }
 
         @Override
@@ -85,18 +141,32 @@ public class ProductListActivity extends AppCompatActivity implements AdapterVie
             }
 
             Product product = getItem(position);
-            viewHolder.txtDescription.setText(product.getDescription());
-            viewHolder.txtTitle.setText(product.getName());
-            viewHolder.txtPrice.setText(String.valueOf((product.getPrice() / 100)));
+            if (product != null) {
+                viewHolder.txtDescription.setText(product.getDescription());
+                viewHolder.txtTitle.setText(product.getName());
+                viewHolder.txtPrice.setText(String.valueOf((product.getPrice() / 100)));
 
-            try {
-                Picasso.with(ProductListActivity.this).load(product.getImageUrl()).into(viewHolder.ivImage);
-            } catch (Product.ProductException e) {
-                Log.d(TAG, "product image could not be set");
+                try {
+                    Picasso.with(ProductListActivity.this).load(product.getImageUrl()).into(viewHolder.ivImage);
+                } catch (Product.ProductException e) {
+                    Log.d(TAG, "product image could not be set");
+                }
             }
 
             return convertView;
         }
+
+        public void updateProduct(Product product) throws ProductListActivityException {
+            ArrayList<Product> products = getProducts();
+            for (int i = 0; i < products.size(); i++) {
+                if (products.get(i).getId() == product.getId()) {
+                    products.set(i, product);
+                    notifyDataSetChanged();
+                    return;
+                }
+            }
+        }
+
 
         private class ViewHolderItem {
 
@@ -111,6 +181,12 @@ public class ProductListActivity extends AppCompatActivity implements AdapterVie
                 txtPrice = (TextView) convertView.findViewById(R.id.txtPrice);
                 txtDescription = (TextView) convertView.findViewById(R.id.txtDescription);
             }
+        }
+    }
+
+    private class ProductListActivityException extends Exception {
+        public ProductListActivityException(String s) {
+            super(s);
         }
     }
 }

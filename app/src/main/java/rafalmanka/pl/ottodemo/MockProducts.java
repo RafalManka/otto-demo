@@ -1,11 +1,14 @@
 package rafalmanka.pl.ottodemo;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 
 /**
  * Created by rafal on 9/28/15.
  */
 public class MockProducts {
+    @NonNull
     public static ArrayList<Product> createMockProducts() {
         ArrayList<Product> products = new ArrayList<>();
 

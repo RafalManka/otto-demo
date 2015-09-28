@@ -7,4 +7,5 @@
     <string name="activity_product_details_currency_postfix">AED</string>
     <string name="activity_product_details_button_title">Edit Item</string>
     <string name="activity_product_edit_button_title">Save</string>
+    <string name="toast_error_price_in_wrong_format">Price is in a wrong format</string>
 </resources>

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
 /**
@@ -97,7 +98,37 @@ public class EditProductActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void onButtonSaveClicked() {
+        saveValues();
+
+        try {
+            BusProvider.getInstance().post(new EventProductChanged(this, getProduct()));
+        } catch (EditProductActivityException e) {
+            Log.e(TAG, "could not send event", e);
+        }
+
         onBackPressed();
+    }
+
+    private void saveValues() {
+        try {
+            Product product = getProduct();
+
+            if (etPrice != null) {
+                try {
+                    product.setPrice(etPrice.getText().toString());
+                } catch (Product.ProductException e) {
+                    Toast.makeText(this, R.string.toast_error_price_in_wrong_format, Toast.LENGTH_LONG).show();
+                }
+            }
+            if (etTitle != null) {
+                product.setName(etTitle.getText().toString());
+            }
+            if (etDescription != null) {
+                product.setDescription(etDescription.getText().toString());
+            }
+        } catch (EditProductActivityException e) {
+            Log.e(TAG, "product is not set", e);
+        }
     }
 
     @NonNull
@@ -112,6 +143,21 @@ public class EditProductActivity extends AppCompatActivity implements View.OnCli
 
         public EditProductActivityException(String s) {
             super(s);
+        }
+    }
+
+    public class EventProductChanged {
+
+        private final Object sender;
+        private final Product product;
+
+        public EventProductChanged(Object sender, Product product) {
+            this.sender = sender;
+            this.product = product;
+        }
+
+        public Product getProduct() {
+            return product;
         }
     }
 }

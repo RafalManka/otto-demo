@@ -8,10 +8,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
 
@@ -67,6 +67,20 @@ public class ProductDetailsActivity extends AppCompatActivity implements View.On
         }
 
         setupView();
+
+        BusProvider.getInstance().register(this);
+    }
+
+    @Subscribe
+    public void onEventProductChanged(EditProductActivity.EventProductChanged event){
+        mProduct = event.getProduct();
+        refreshUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BusProvider.getInstance().unregister(this);
     }
 
     private void setupView() {
