@@ -9,7 +9,10 @@ public class MockProducts {
     public static ArrayList<Product> createMockProducts() {
         ArrayList<Product> products = new ArrayList<>();
 
-        User user=new User();
+        User user = new User();
+        user.setAvatar("http://img.technospot.net/Create-your-Own-Avatar-which-is-lookalike-of-official-Android-Mascot.jpg");
+        user.setName("John Doe");
+        user.setLocation("Lives in Dubai Marina");
 
         //-- pants
         Product pants = new Product();

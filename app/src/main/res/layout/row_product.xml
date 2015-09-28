@@ -4,26 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="4dp"
-    android:weightSum="4">
+
+    android:weightSum="5"
+    tools:ignore="RtlHardcoded,RtlSymmetry">
 
     <ImageView
+        android:scaleType="fitStart"
         android:id="@+id/ivImage"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        tools:ignore="ContentDescription" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingRight="5dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
 
             <TextView
                 android:id="@+id/txtTitle"
@@ -43,6 +48,7 @@
             android:id="@+id/txtDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
             tools:text="Hello description" />
     </LinearLayout>
 
