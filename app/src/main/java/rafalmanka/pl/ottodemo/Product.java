@@ -81,6 +81,14 @@ public class Product implements Serializable {
         return price / 100;
     }
 
+    public void setPrice(String s) {
+        try {
+            float floatPrice = Float.parseFloat(s);
+            price = (int) (floatPrice * 100);
+        } catch (NumberFormatException e) {
+        }
+    }
+
     public class ProductException extends Exception {
         public ProductException(String s) {
         }

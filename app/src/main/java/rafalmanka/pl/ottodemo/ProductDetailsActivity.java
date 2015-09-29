@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.otto.Subscribe;
 import com.squareup.picasso.Picasso;
 
 
@@ -67,6 +68,19 @@ public class ProductDetailsActivity extends AppCompatActivity implements View.On
         }
 
         setupView();
+        EventProvider.getInstance().register(this);
+    }
+
+    @Subscribe
+    public void onEventProductUpdated(EditProductActivity.EventProductUpdated event){
+        mProduct = event.getProduct();
+        refreshUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventProvider.getInstance().unregister(this);
+        super.onDestroy();
     }
 
     private void setupView() {

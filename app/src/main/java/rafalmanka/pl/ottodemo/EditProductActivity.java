@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import com.squareup.otto.Bus;
+
 
 /**
  * Created by rafal on 9/28/15.
@@ -97,6 +99,21 @@ public class EditProductActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void onButtonSaveClicked() {
+        try {
+            if (etPrice != null) {
+                getProduct().setPrice(etPrice.getText().toString());
+            }
+        } catch (EditProductActivityException e) {
+            e.printStackTrace();
+        }
+
+        // TODO broadcast
+        Bus bus = EventProvider.getInstance();
+        try {
+            bus.post(new EventProductUpdated(this, getProduct()));
+        } catch (EditProductActivityException e) {
+        }
+
         onBackPressed();
     }
 
@@ -112,6 +129,21 @@ public class EditProductActivity extends AppCompatActivity implements View.OnCli
 
         public EditProductActivityException(String s) {
             super(s);
+        }
+    }
+
+    public class EventProductUpdated {
+
+        private final Object sender;
+        private final Product product;
+
+        public EventProductUpdated(Object sender, Product product) {
+            this.sender=sender;
+            this.product=product;
+        }
+
+        public Product getProduct() {
+            return product;
         }
     }
 }
